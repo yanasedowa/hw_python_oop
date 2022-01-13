@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import List, Union
 
 
 @dataclass
@@ -18,7 +19,7 @@ class InfoMessage:
                 f'Потрачено ккал: {self.calories:.3f}.')
 
     def get_message(self) -> str:
-        return self.__repr__()
+        return repr(self)
 
 
 class Training:
@@ -65,11 +66,11 @@ class Running(Training):
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий при беге"""
-        return ((self.MEAN_SPEED_MULTIPLIER
-                 * self.get_mean_speed()
-                 - self.MEAN_SPEED_SUBTRACT)
-                * self.weight / self.M_IN_KM
-                * self.duration * self.MIN_IN_HOUR)
+        return (
+            (
+                self.MEAN_SPEED_MULTIPLIER * self.get_mean_speed()
+            ) - self.MEAN_SPEED_SUBTRACT
+        ) * self.weight / self.M_IN_KM * self.duration * self.MIN_IN_HOUR
 
 
 class SportsWalking(Training):
@@ -89,15 +90,16 @@ class SportsWalking(Training):
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий при ходьбе"""
-        return ((self.WEIGHT_MULTIPLIER
-                 * self.weight
-                 + (self.get_mean_speed()
-                    ** self.MEAN_SPEED_SQUARED
-                    // self.height)
-                 * self.MULTIPLIER
-                 * self.weight)
-                * self.duration
-                * self.MIN_IN_HOUR)
+        return (
+            (
+                self.WEIGHT_MULTIPLIER * self.weight
+            ) + (
+                self.get_mean_speed() ** self.MEAN_SPEED_SQUARED
+            ) // (
+                self.height
+            ) * (
+                self.MULTIPLIER * self.weight)
+        ) * self.duration * self.MIN_IN_HOUR
 
 
 class Swimming(Training):
@@ -124,13 +126,14 @@ class Swimming(Training):
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий при плавании"""
-        return ((self.get_mean_speed() + self.MEAN_SPEED_SUM)
-                * self.MULTIPLIER * self.weight)
+        return (
+            self.get_mean_speed() + self.MEAN_SPEED_SUM
+        ) * self.MULTIPLIER * self.weight
 
 
-def read_package(workout_type: str, data: list) -> Training:
+def read_package(workout_type: str, data: List[Union[int, float]]) -> Training:
     """Прочитать данные полученные от датчиков."""
-    training_types: dict = {
+    training_types = {
         'SWM': Swimming,
         'RUN': Running,
         'WLK': SportsWalking
